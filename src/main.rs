@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, RGB, Point};
+use rltk::{GameState, Point, Rltk, RGB};
 use specs::prelude::*;
 
 mod components;
@@ -66,7 +66,6 @@ impl State {
     }
 }
 
-
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
@@ -84,6 +83,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Player>();
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Monster>();
+    gs.ecs.register::<Name>();
 
     // Create map
     let map = Map::new_map_rooms_and_corridors();
@@ -107,19 +107,29 @@ fn main() -> rltk::BError {
             range: 8,
             dirty: true,
         })
+        .with(Name {
+            name: "Player".to_string(),
+        })
         .build();
 
     // Spawn monsters
     let mut rng = rltk::RandomNumberGenerator::new();
-    for room in map.rooms.iter().skip(1) {
+    for (i, room) in map.rooms.iter().skip(1).enumerate() {
         let (x, y) = room.center();
 
         let glyph: rltk::FontCharType;
         let roll = rng.roll_dice(1, 2);
+        let name: String;
 
         match roll {
-            1 => glyph = rltk::to_cp437('g'),
-            _ => glyph = rltk::to_cp437('o'),
+            1 => {
+                glyph = rltk::to_cp437('g');
+                name = "Goblin".to_string();
+            }
+            _ => {
+                glyph = rltk::to_cp437('o');
+                name = "Orc".to_string();
+            }
         }
 
         gs.ecs
@@ -136,6 +146,9 @@ fn main() -> rltk::BError {
                 dirty: true,
             })
             .with(Monster {})
+            .with(Name {
+                name: format!("{} #{}", &name, i),
+            })
             .build();
     }
 
