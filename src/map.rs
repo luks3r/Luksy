@@ -1,5 +1,5 @@
 use super::{Rect, World};
-use rltk::{RandomNumberGenerator, Rltk, RGB};
+use rltk::{Algorithm2D, BaseMap, RGB, RandomNumberGenerator, Rltk, Point};
 use std::cmp::{max, min};
 
 #[derive(PartialEq, Copy, Clone)]
@@ -100,9 +100,15 @@ impl Map {
 
 }
 
-impl Default for Map {
-    fn default() -> Self {
-        Self::new_map_rooms_and_corridors()
+impl Algorithm2D for Map {
+    fn dimensions(&self) -> Point {
+        Point::new(self.width, self.height)
+    }
+}
+
+impl BaseMap for Map {
+    fn is_opaque(&self, idx: usize) -> bool {
+        self.tiles[idx as usize] == TileType::Wall
     }
 }
 
